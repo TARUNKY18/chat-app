@@ -2,7 +2,7 @@ import { Conversation } from "../models/conversation.model.js"
 import { Message } from "../models/message.model.js"
 
 
-const sendMessage = async () => {
+const sendMessage = async (req, res) => {
     try {
         
         const { message } = req.body
@@ -18,7 +18,7 @@ const sendMessage = async () => {
         })
 
         if(!conversation){
-            conversation = Conversation.create({
+            conversation = await Conversation.create({
                 participants: [senderId, receiverId]
             })
         }
@@ -46,7 +46,41 @@ const sendMessage = async () => {
     }
 }
 
+const getMessage = async (req, res) => {
+    try {
+        
+        const { id: userToChatId } = req.params
+        const senderId = req.user._id
+
+        if(!userToChatId){
+            return res.status(400).json({ message: "Message ID is required" })
+        }
+
+        if(!senderId) {
+            return res.status(401).json({ message: "Not authorized" })
+        }
+
+        const conversation = await Conversation.findOne({
+            participants: { $all: [senderId, userToChatId] }
+        }).populate("messages")
+
+        if(!conversation) {
+            return res.status(201).json([])
+        }
+
+        const messages = conversation.messages
+
+        // res.status(200).json(conversation.messages)
+        res.status(200).json(messages)
+
+    } catch (error) {
+        console.error("Error in getting message", error.message)
+        res.status(500).json({ error: "Internal Server Error" })
+    }
+}
+
 export {
-    sendMessage
+    sendMessage,
+    getMessage
  
 }

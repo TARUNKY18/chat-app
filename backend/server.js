@@ -12,10 +12,12 @@ app.use(cookieParser());
 
 import authRoute from '../backend/routes/auth.routes.js';
 import messageRoute from '../backend/routes/message.routes.js'
+import userRouter from '../backend/routes/user.routes.js'
 
 
 app.use("/api/auth", authRoute)
 app.use("/api/message", messageRoute)
+app.use("/api/user", userRouter)
 
 app.listen(PORT, () => {
     connectToMongoDB();
